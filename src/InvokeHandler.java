@@ -22,15 +22,19 @@ public class InvokeHandler implements InvocationHandler {
         for (Annotation a : Arrays.stream(myMethod.getDeclaredAnnotations()).filter(x->x.annotationType().equals(Mutator.class)||x.annotationType().equals(Cache.class) ).toList()) {
             if (a.annotationType() == Mutator.class) {
                 isMutated = true;
+                return method.invoke(obj, args);
             }
             if (a.annotationType() == Cache.class ) {
-                if (isMutated)
+                if (isMutated) {
                     isMutated = false;  //Надо пересчитать ниже и сбросить признак
+                    retCachedObj = method.invoke(obj, args);
+                    return retCachedObj;
+                }
                 else
                     return retCachedObj;  //Надо вернуть старое
             }
         }
-        retCachedObj = method.invoke(obj, args);
-        return retCachedObj;
+
+        return method.invoke(obj, args);
     }
 }
